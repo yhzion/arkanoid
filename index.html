@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Arkanoid — Clean-Room Homage</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: #111; color: #eee; font-family: system-ui, sans-serif; overflow: hidden; }
+    #wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 10px; padding: 10px; }
+    #screen { position: relative; line-height: 0; background: #000; border: 2px solid #333; box-shadow: 0 0 20px #000; }
+    canvas { display: block; width: min(96vw, 1024px); height: auto; image-rendering: pixelated; image-rendering: crisp-edges; background: #000; }
+    #panel { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; font-size: 13px; }
+    #panel label, #panel button, #panel select { background: #222; border: 1px solid #444; color: #eee; padding: 5px 8px; border-radius: 4px; }
+    #panel button { cursor: pointer; }
+    #panel button:active { background: #444; }
+    #nameOverlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); }
+    #nameOverlay.active { display: flex; }
+    #nameOverlay h2 { margin: 0 0 10px; font-size: 14px; }
+    #nameInput { text-transform: uppercase; width: 80px; text-align: center; font-size: 16px; background: #000; color: #0f0; border: 2px solid #0f0; outline: none; }
+    .crt { filter: contrast(1.1) brightness(1.05) saturate(0.9); }
+    .crt::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(rgba(0,0,0,0.15) 0 1px, transparent 1px 2px); }
+    #help { max-width: 512px; font-size: 11px; color: #999; text-align: center; }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <div id="screen">
+      <canvas id="game" width="256" height="240"></canvas>
+      <div id="nameOverlay">
+        <h2>NEW HIGH SCORE — ENTER INITIALS</h2>
+        <input id="nameInput" type="text" maxlength="3" autocomplete="off" />
+        <div style="margin-top:8px;font-size:11px;color:#aaa">Press ENTER or tap away</div>
+      </div>
+    </div>
+    <div id="panel">
+      <label>Mode: <select id="modeSelect"><option value="clean-room">Clean-Room</option><option value="licensed-fidelity">Licensed</option></select></label>
+      <label>Deflection: <select id="deflSelect"><option value="continuous">Continuous</option><option value="discrete8">Discrete 8-zone</option></select></label>
+      <label><input id="jitterCheck" type="checkbox" /> Jitter</label>
+      <label><input id="crtCheck" type="checkbox" /> CRT</label>
+      <label><input id="audioCheck" type="checkbox" checked /> Audio</label>
+      <button id="resetBtn">Reset High Scores</button>
+      <button id="fsBtn">Fullscreen</button>
+    </div>
+    <div id="help">
+      Move: ← → or A D · Fire/Release: Space/Z/J · Start/Pause: Enter/P · Select: Shift/Tab · Mute: M · Fullscreen: F
+    </div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
