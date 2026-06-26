@@ -3,6 +3,7 @@ import { EventBus } from '../core/eventBus';
 import { ScoreTracker } from './scoring';
 import { RoundSim } from './roundSim';
 import { ILevelData, IBrickCell } from '../data/schemas';
+import { Mulberry32, seedFromString } from '../core/rng';
 
 function cell(col: number, row: number, type: IBrickCell['type'], over: Partial<IBrickCell> = {}): IBrickCell {
   const clearRequired = type !== 'EMPTY' && type !== 'GOLD';
@@ -35,11 +36,19 @@ function level(cells: IBrickCell[]): ILevelData {
 
 function makeSim(lvl: ILevelData) {
   const bus = new EventBus();
-  let lives = 3;
-  const score = new ScoreTracker(bus, (n) => (lives += n));
-  const sim = new RoundSim(bus, lvl, 'continuous', 1, score);
-  sim.extraLifeCallback = (n) => (lives += n);
-  return { bus, sim, score, getLives: () => lives };
+  const score = new ScoreTracker(bus, () => {});
+  const capsuleRng = new Mulberry32(seedFromString('test'));
+  const sim = new RoundSim({
+    bus,
+    level: lvl,
+    deflectionModel: 'continuous',
+    roundNumber: 1,
+    score,
+    capsuleRng,
+    lives: 3,
+    finalBrickRound: 35,
+  });
+  return { bus, sim, score };
 }
 
 describe('RoundSim core loop (§10/§11/§16/§19.5)', () => {
