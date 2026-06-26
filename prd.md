@@ -1,4 +1,4 @@
-# PRD: NES Arkanoid Reference-Accurate Web Version
+# PRD: Arkanoid II — Revenge of DOH, Reference-Accurate Web Version
 
 **Document version:** 1.0  
 **Date:** 2026-06-25  
@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary
 
-Build a playable web version of *Arkanoid* that recreates the NES version's game flow, control model, brick behavior, score rules, capsule power-ups, life system, enemy behavior, stage progression, boss battle, title flow, and ending flow as closely as possible.
+Build a playable web version of *Arkanoid II: Revenge of DOH* that recreates its NES-era game flow, control model, brick behavior, score rules, capsule power-ups, life system, enemy behavior, branching stage progression, boss battles, title flow, and ending flow as closely as possible.
 
 The product has two operating modes:
 
