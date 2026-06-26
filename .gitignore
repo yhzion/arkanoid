@@ -12,6 +12,16 @@ build/
 test-results/
 playwright-report/
 coverage/
+tests/screenshots/
+
+# Compiled config files
+*.config.js
+*.config.js.map
+*.config.d.ts
+*.config.d.ts.map
+
+# Temporary/Compiled Engine Folder
+game-engine/
 
 # Logs
 logs
