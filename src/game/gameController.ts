@@ -198,8 +198,16 @@ export class GameController {
   private tickPlaying(input: InputSnapshot): void {
     const sim = this.sim;
     if (!sim) return;
-    if (this.sm.state === GameState.BALL_READY && input.firePressed) {
-      this.sm.transition(GameState.PLAYING);
+    if (this.sm.state === GameState.BALL_READY) {
+      // A+Start level-skip cheat (§14.7): fire(A) + start, cap round 16.
+      if (this.config.enableManualLevelSkipSecret && input.firePressed && input.start && this.round < 16) {
+        this.round++;
+        this.enterRoundIntro();
+        return;
+      }
+      if (input.firePressed) {
+        this.sm.transition(GameState.PLAYING);
+      }
     }
     if (input.start && this.sm.isPausableState()) {
       this.sm.transition(GameState.PAUSED);
