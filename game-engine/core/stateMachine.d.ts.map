@@ -1,0 +1,1 @@
+{"version":3,"file":"stateMachine.d.ts","sourceRoot":"","sources":["stateMachine.ts"],"names":[],"mappings":"AAEA,oBAAY,SAAS;IACnB,IAAI,SAAS;IACb,KAAK,UAAU;IACf,OAAO,YAAY;IACnB,SAAS,cAAc;CAExB;AAED,qBAAa,YAAY;IACvB,OAAO,CAAC,YAAY,CAA6B;IAE1C,QAAQ,IAAI,SAAS;IAIrB,YAAY,CAAC,QAAQ,EAAE,SAAS;CAKxC"}
