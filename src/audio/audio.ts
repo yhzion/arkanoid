@@ -155,13 +155,50 @@ export class AudioEngine {
     }
 
     public playBrickHitSFX(type: string): void {
-        if (type === 'GOLD') {
+        if (type === 'VAUS') {
+            // Paddle bounce cue (§17.3)
+            this.playBounceSFX();
+            return;
+        }
+        if (type === 'WALL') {
+            // Distinct short wall tick (§17.3), not the brick thud
+            this.playTone(220, 'triangle', 0.04, 0.22);
+        } else if (type === 'CATCH') {
+            // Soft catch blip
+            this.playTone(660, 'sine', 0.06, 0.3);
+        } else if (type === 'GOLD') {
             // Metallic ring
             this.playTone(987, 'sine', 0.1, 0.3, 800);
         } else {
             // Short pulse thud
             this.playTone(150, 'square', 0.05, 0.3);
         }
+    }
+
+    public playEnemyDestroyedSFX(): void {
+        // Short noise burst
+        this.playNoise(0.14, 0.35, 1000);
+    }
+
+    public playCapsuleSpawnSFX(): void {
+        // Soft high blip as a capsule appears
+        this.playTone(880, 'sine', 0.05, 0.2);
+    }
+
+    public playPowerupSFX(): void {
+        // Rising activation sweep
+        this.playTone(440, 'triangle', 0.2, 0.3, 1320);
+    }
+
+    public playBossProjectileSFX(): void {
+        // Short descending zap
+        this.playTone(300, 'square', 0.08, 0.2, 120);
+    }
+
+    public playBossDefeatedSFX(): void {
+        // Big rumble + noise
+        this.playNoise(0.5, 0.4, 400);
+        this.playTone(120, 'sawtooth', 0.6, 0.3, 30);
     }
 
     public playBrickDestroyedSFX(type: string): void {
@@ -318,13 +355,19 @@ export class AudioEngine {
             }
         });
         EventBus.on(GameEvents.LASER_FIRED, () => this.playLaserSFX());
+        EventBus.on(GameEvents.CAPSULE_SPAWNED, () => this.playCapsuleSpawnSFX());
         EventBus.on(GameEvents.CAPSULE_COLLECTED, () => this.playCapsuleCollectSFX());
+        EventBus.on(GameEvents.POWERUP_ACTIVATED, () => this.playPowerupSFX());
+        EventBus.on(GameEvents.ENEMY_DESTROYED, () => this.playEnemyDestroyedSFX());
         EventBus.on(GameEvents.EXTRA_LIFE_AWARDED, () => this.playExtraLifeSFX());
         EventBus.on(GameEvents.LIFE_LOST, () => this.playVausDeathSFX());
         EventBus.on(GameEvents.ROUND_STARTED, () => this.playRoundStartJingle());
         EventBus.on(GameEvents.ROUND_CLEARED, () => this.playVictoryJingle());
+        EventBus.on(GameEvents.BREAK_WARP_OPENED, () => this.playWarpSFX());
         EventBus.on(GameEvents.BREAK_WARP_ENTERED, () => this.playWarpSFX());
         EventBus.on(GameEvents.BOSS_HIT, () => this.playBossHitSFX());
+        EventBus.on(GameEvents.BOSS_PROJECTILE_FIRED, () => this.playBossProjectileSFX());
+        EventBus.on(GameEvents.BOSS_DEFEATED, () => this.playBossDefeatedSFX());
         EventBus.on(GameEvents.GAME_OVER, () => this.playGameOverJingle());
     }
 }

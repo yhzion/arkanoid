@@ -1,4 +1,4 @@
-import { ILevelData, IBrickCell, BrickType } from '../data/levelSchema';
+import { ILevelData, IBrickCell, BrickType, CapsuleType } from '../data/levelSchema';
 import { toFx } from '../core/fxMath';
 import { AABB } from '../physics/collision';
 import { EventBus, GameEvents } from '../core/eventBus';
@@ -41,14 +41,14 @@ export class BrickGrid {
         };
     }
 
-    public hitBrick(col: number, row: number, damage: number = 1, forceDestroy: boolean = false, doubleScore: boolean = false): { destroyed: boolean; points: number } {
+    public hitBrick(col: number, row: number, damage: number = 1, forceDestroy: boolean = false, doubleScore: boolean = false): { destroyed: boolean; points: number; capsule: CapsuleType } {
         const cell = this.getCell(col, row);
-        if (!cell || cell.type === 'EMPTY') return { destroyed: false, points: 0 };
+        if (!cell || cell.type === 'EMPTY') return { destroyed: false, points: 0, capsule: null };
 
         EventBus.emit(GameEvents.BRICK_HIT, { col, row, type: cell.type });
 
         if (cell.type === 'GOLD' && !forceDestroy) {
-            return { destroyed: false, points: 0 };
+            return { destroyed: false, points: 0, capsule: cell.capsule };
         }
 
         let destroyed = false;
@@ -65,7 +65,7 @@ export class BrickGrid {
                 type: 'GOLD',
                 scoreDelta: 0
             });
-            return { destroyed: true, points: 0 };
+            return { destroyed: true, points: 0, capsule: cell.capsule };
         }
 
         cell.hitsRemaining -= damage;
@@ -93,7 +93,7 @@ export class BrickGrid {
             });
         }
 
-        return { destroyed, points };
+        return { destroyed, points, capsule: cell.capsule };
     }
 
     private getBrickScore(type: BrickType): number {

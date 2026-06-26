@@ -2,7 +2,7 @@ import { ILevelData, CapsuleType } from '../data/levelSchema';
 import { Fx, toFx, fxMul, fxAbs, FX_ONE, TWO_FX } from './fxMath';
 import { AABB, sweptAABB, isOverlapping } from '../physics/collision';
 import { Vaus } from '../entities/vaus';
-import { Ball } from '../entities/ball';
+import { Ball, computeScaledSpeed } from '../entities/ball';
 import { BrickGrid } from '../entities/bricks';
 import { CapsuleManager } from '../entities/capsules';
 import { EnemyManager } from '../entities/enemies';
@@ -81,6 +81,18 @@ export class RoundStateTracker {
     }
 
     /**
+     * Recompute the shared, scaled ball speed (§10.2) from the round's
+     * accumulated ceiling/brick counters and apply it to every active ball.
+     * Centralising this guarantees multi-ball speed sharing.
+     */
+    public applyScaledSpeed(): void {
+        const speed = computeScaledSpeed(this.hasCeilingBeenHit, this.brickHitsInRound);
+        for (const ball of this.balls) {
+            ball.setSpeed(speed);
+        }
+    }
+
+    /**
      * Resets the round state when a life is lost.
      */
     public restartAfterDeath(): void {
@@ -89,6 +101,9 @@ export class RoundStateTracker {
         this.isRoundCompletedMode = false;
         this.lasers = [];
         this.laserCooldown = 0;
+        // Speed scaling resets to base 2.0 on death (§10.2).
+        this.brickHitsInRound = 0;
+        this.hasCeilingBeenHit = false;
         this.vaus.reset();
         this.capsules.reset();
         this.enemies.reset();
@@ -339,8 +354,8 @@ export class RoundStateTracker {
 
                 if (!this.hasCeilingBeenHit) {
                     this.hasCeilingBeenHit = true;
-                    // Speed step ceiling hit: +0.25 px/tick
-                    ball.setSpeed(ball.speed + toFx(0.25));
+                    // Speed step ceiling hit: +0.25 px/tick, shared by all balls (§10.2)
+                    this.applyScaledSpeed();
                 }
             }
 
@@ -463,17 +478,20 @@ export class RoundStateTracker {
                 // Perform hit logic
                 const cell = this.bricks.getCell(hit.col, hit.row);
                 const isCarrier = cell?.isCapsuleCarrier;
-                const { destroyed } = this.bricks.hitBrick(hit.col, hit.row, 1, this.megaActive, this.vaus.reduceActive);
-                
-                // Spawn capsule if only 1 ball is active
+                const { destroyed, capsule } = this.bricks.hitBrick(hit.col, hit.row, 1, this.megaActive, this.vaus.reduceActive);
+
+                // Spawn capsule if only 1 ball is active. A level-data capsule (incl.
+                // M/R) on the carrier cell spawns that exact type (§12.3); otherwise
+                // the random table of 7 standard types is used.
                 if (destroyed && isCarrier && this.balls.length === 1) {
-                    this.capsules.spawn(brickAABB.x, brickAABB.w, brickAABB.y, brickAABB.h, this.rng);
+                    this.capsules.spawn(brickAABB.x, brickAABB.w, brickAABB.y, brickAABB.h, this.rng, capsule);
                 }
 
                 this.brickHitsInRound++;
                 if (this.brickHitsInRound % 10 === 0) {
-                    // Speed increase step: +0.05 px/tick, capped at 5.0
-                    ball.setSpeed(Math.min(toFx(5.0), ball.speed + toFx(0.05)));
+                    // Speed increase step: +0.05 px/tick per 10 hits, capped at 5.0,
+                    // shared by all balls (§10.2)
+                    this.applyScaledSpeed();
                 }
 
                 brickCollided = true;
@@ -512,10 +530,10 @@ export class RoundStateTracker {
                         laserConsumed = true;
                         
                         const isCarrier = cell.isCapsuleCarrier;
-                        const { destroyed } = this.bricks.hitBrick(c, r, 1, false, this.vaus.reduceActive);
-                        
+                        const { destroyed, capsule } = this.bricks.hitBrick(c, r, 1, false, this.vaus.reduceActive);
+
                         if (destroyed && isCarrier && this.balls.length === 1) {
-                            this.capsules.spawn(brickAABB.x, brickAABB.w, brickAABB.y, brickAABB.h, this.rng);
+                            this.capsules.spawn(brickAABB.x, brickAABB.w, brickAABB.y, brickAABB.h, this.rng, capsule);
                         }
                         break;
                     }

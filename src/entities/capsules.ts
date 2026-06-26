@@ -2,6 +2,7 @@ import { Fx, toFx } from '../core/fxMath';
 import { AABB } from '../physics/collision';
 import { CapsuleType } from '../data/levelSchema';
 import { SeededRNG } from '../core/rng';
+import { EventBus, GameEvents } from '../core/eventBus';
 
 export interface ICapsule {
     x: Fx;
@@ -26,8 +27,27 @@ export class CapsuleManager {
         this.previousCapsule = null;
     }
 
-    public spawn(brickX: Fx, brickWidth: Fx, brickY: Fx, brickHeight: Fx, rng: SeededRNG): void {
-        const type = this.getRandomCapsuleType(rng);
+    public spawn(
+        brickX: Fx,
+        brickWidth: Fx,
+        brickY: Fx,
+        brickHeight: Fx,
+        rng: SeededRNG,
+        explicitType?: CapsuleType
+    ): void {
+        // Only one falling capsule may be active at a time (§12.1). Skip the drop
+        // before drawing the RNG so the capsule PRNG stream is not advanced (§30.5).
+        if (this.activeCapsules.length > 0) return;
+
+        // Level-data placement (§12.3): when the carrier cell carries an explicit
+        // capsule (including M/R), spawn it directly without drawing the RNG. A
+        // null/undefined capsule falls back to the random table of 7 standard types.
+        let type: CapsuleType;
+        if (explicitType != null) {
+            type = explicitType;
+        } else {
+            type = this.getRandomCapsuleType(rng);
+        }
         this.previousCapsule = type;
 
         const capW = toFx(16);
@@ -44,6 +64,9 @@ export class CapsuleManager {
             h: capH,
             type
         });
+
+        // Announce the spawn so its SFX cue can fire (§17.3).
+        EventBus.emit(GameEvents.CAPSULE_SPAWNED, { type });
     }
 
     private getRandomCapsuleType(rng: SeededRNG): CapsuleType {

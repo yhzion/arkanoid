@@ -4,6 +4,37 @@ import { GameState } from '../core/gameState';
 import { Audio } from '../audio/audio';
 import { Input } from '../input/input';
 import { loadSettings, saveSettings, resetLeaderboard } from '../core/persistence';
+import { computeIntegerScale } from '../render/renderer';
+
+/**
+ * Snap the canvas wrapper to the largest integer multiple of the 256x240
+ * logical resolution that fits the available space (§6.1). Falls back to the
+ * fluid CSS layout when the mode is 'fit'.
+ */
+function applyRenderScaleMode(canvas: HTMLCanvasElement, mode: 'integer' | 'fit'): void {
+    const wrapper = canvas.parentElement as HTMLElement | null;
+    if (!wrapper) return;
+
+    if (mode !== 'integer') {
+        // Restore fluid layout defaults from CSS.
+        wrapper.style.removeProperty('width');
+        wrapper.style.removeProperty('height');
+        wrapper.style.removeProperty('max-width');
+        wrapper.style.removeProperty('aspect-ratio');
+        return;
+    }
+
+    const apply = () => {
+        const container = wrapper.parentElement ?? document.body;
+        const scale = computeIntegerScale(container.clientWidth, window.innerHeight);
+        wrapper.style.width = `${256 * scale}px`;
+        wrapper.style.height = `${240 * scale}px`;
+        wrapper.style.maxWidth = 'none';
+        wrapper.style.aspectRatio = 'auto';
+    };
+    apply();
+    window.addEventListener('resize', apply);
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
     const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
@@ -11,6 +42,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Canvas element gameCanvas not found!');
         return;
     }
+
+    applyRenderScaleMode(canvas, loadSettings().config.renderScaleMode);
 
     // Initialize bootstrapper
     const bootstrapper = new GameBootstrapper(canvas);

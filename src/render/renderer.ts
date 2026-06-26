@@ -4,6 +4,32 @@ import { GameState as StateMachineState } from '../core/stateMachine';
 import { toFloat } from '../core/fxMath';
 import { BrickType, CapsuleType } from '../data/levelSchema';
 
+// States that render the live playfield. GAMEPLAY_DEMO is included so the
+// attract-mode demo shows real gameplay instead of a black screen (§8.2).
+const GAMEPLAY_RENDER_STATES: StateMachineState[] = [
+    'PLAYING', 'BALL_READY', 'ROUND_INTRO', 'PAUSED', 'LIFE_LOST',
+    'ROUND_CLEAR', 'BREAK_WARP', 'BOSS_INTRO', 'BOSS_PLAYING', 'BOSS_DEFEATED',
+    'GAMEPLAY_DEMO',
+];
+
+export function isGameplayRenderState(state: StateMachineState): boolean {
+    return GAMEPLAY_RENDER_STATES.includes(state);
+}
+
+/**
+ * Largest integer scale (>= 1) at which the logical canvas fits the given
+ * container, for pixel-perfect integer scaling (§6.1).
+ */
+export function computeIntegerScale(
+    containerW: number,
+    containerH: number,
+    logicalW = 256,
+    logicalH = 240
+): number {
+    const fit = Math.min(containerW / logicalW, containerH / logicalH);
+    return Math.max(1, Math.floor(fit));
+}
+
 export class CanvasRenderer {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
@@ -65,10 +91,7 @@ export class CanvasRenderer {
         this.clear();
 
         // Render gameplay elements for states where the action happens
-        const isGameplayState = [
-            'PLAYING', 'BALL_READY', 'ROUND_INTRO', 'PAUSED', 'LIFE_LOST', 
-            'ROUND_CLEAR', 'BREAK_WARP', 'BOSS_INTRO', 'BOSS_PLAYING', 'BOSS_DEFEATED'
-        ].includes(activeState);
+        const isGameplayState = isGameplayRenderState(activeState);
 
         if (isGameplayState) {
             this.renderPlayfieldBackground();

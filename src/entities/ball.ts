@@ -3,6 +3,25 @@ import { AABB } from '../physics/collision';
 import { CONTINUOUS_LUT, DISCRETE_LUT, LAUNCH_RIGHT, LAUNCH_LEFT, rotateVector15 } from '../core/angleLut';
 import { SeededRNG } from '../core/rng';
 
+// Ball speed scaling constants (§10.2 / §33.1), in Q16.16 px/tick.
+export const SPEED_BASE: Fx = toFx(2);
+export const SPEED_SLOW: Fx = toFx(1.5);
+export const SPEED_MAX: Fx = toFx(5);
+const SPEED_CEILING_STEP: Fx = toFx(0.25);
+const SPEED_BRICK_STEP: Fx = toFx(0.05);
+
+/**
+ * Deterministic ball speed from accumulated round state (§10.2):
+ * base 2.0, +0.25 on the first ceiling hit of the round, +0.05 per full
+ * group of 10 accumulated brick hits, capped at 5.0 px/tick.
+ */
+export function computeScaledSpeed(ceilingHit: boolean, brickHitCount: number): Fx {
+    let speed = SPEED_BASE;
+    if (ceilingHit) speed += SPEED_CEILING_STEP;
+    speed += Math.floor(brickHitCount / 10) * SPEED_BRICK_STEP;
+    return Math.min(speed, SPEED_MAX);
+}
+
 export class Ball {
     public x: Fx = 0;
     public y: Fx = 0;
@@ -89,12 +108,14 @@ export class Ball {
         this.wallBounceCount = 0;
         this.speed = toFx(2);
 
-        // Center X dividing rule:
-        // if the Vaus center is in the right half of the screen, launch left. Otherwise launch right.
+        // Center X dividing rule (§10.3, §33.1):
+        // right half -> launch left; left half -> launch right.
+        // The dividing X is the playfield center, center-inclusive -> launch right,
+        // so only a strictly right-of-center Vaus launches left.
         const vausCenter = vausX + vausWidth / 2;
         const playfieldCenter = toFx(96); // 192 / 2
 
-        if (vausCenter >= playfieldCenter) {
+        if (vausCenter > playfieldCenter) {
             // Launch Left
             this.ux = LAUNCH_LEFT.vx;
             this.uy = LAUNCH_LEFT.vy;

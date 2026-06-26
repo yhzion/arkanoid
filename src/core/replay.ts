@@ -1,19 +1,19 @@
 import { InputSnapshot } from '../input/input';
 
-export interface IReplayInputRecord {
-    tick: number;
+// Canonical replay schema (docs/qa/replay_format.md, PRD §19.4.1 / §30.6).
+// inputTicks is a DENSE log: exactly one record per tick, tick === array index.
+export interface IFrameInput {
+    tick: number; // equals array index
     input: {
         left: boolean;
         right: boolean;
         fire: boolean;
-        start: boolean;
-        select: boolean;
-        pointerXDelta: number;
-        pointerXAbsolute: number;
+        start?: boolean;
+        paddleX?: number; // integer logical pixels, quantized before sim (§30.6)
     };
 }
 
-export interface IReplayData {
+export interface IReplayLog {
     formatVersion: number;
     gameVersion: string;
     region: 'US' | 'JP';
@@ -24,17 +24,21 @@ export interface IReplayData {
     deflectionModel: 'continuous' | 'discrete8';
     jitterEnabled: boolean;
     numericModel: string;
-    prngState: number[]; // PRNG seed state(s)
-    inputTicks: IReplayInputRecord[];
+    prngState: string[]; // mulberry32 state per active stream (one per player in 2P)
+    inputTicks: IFrameInput[];
 }
 
+const NEUTRAL_PADDLE_X = 128;
+
 export class ReplaySystem {
+    // Bump on any determinism-breaking change (§30.7).
+    public static readonly FORMAT_VERSION = 1;
+
     private recording: boolean = false;
     private playing: boolean = false;
-    
-    private recordedInputs: IReplayInputRecord[] = [];
-    private playbackInputs: IReplayInputRecord[] = [];
-    private playbackIndex: number = 0;
+
+    private recordedInputs: IFrameInput[] = [];
+    private playbackInputs: IFrameInput[] = [];
 
     constructor() {}
 
@@ -54,21 +58,45 @@ export class ReplaySystem {
                 right: snapshot.right,
                 fire: snapshot.fire,
                 start: snapshot.start,
-                select: snapshot.select,
-                pointerXDelta: snapshot.pointerXDelta,
-                pointerXAbsolute: snapshot.pointerXAbsolute
-            }
+                // Quantize the analog pointer position to integer logical pixels (§30.6).
+                paddleX: Math.round(snapshot.pointerXAbsolute),
+            },
         });
     }
 
-    public stopRecording(): IReplayInputRecord[] {
+    public stopRecording(): IFrameInput[] {
         this.recording = false;
         return this.recordedInputs;
     }
 
-    public startPlayback(replayData: IReplayData): void {
+    /**
+     * Load and validate an untrusted replay before playback (§19.4.1, §30.7).
+     * Rejects (throws) on formatVersion/configHash mismatch or a non-dense log.
+     */
+    public loadReplay(replayData: IReplayLog, expectedConfigHash: string): void {
+        if (!replayData || typeof replayData !== 'object') {
+            throw new Error('Replay rejected: payload is not an object.');
+        }
+        if (replayData.formatVersion !== ReplaySystem.FORMAT_VERSION) {
+            throw new Error(
+                `Replay rejected: formatVersion ${replayData.formatVersion} !== ${ReplaySystem.FORMAT_VERSION}.`
+            );
+        }
+        if (replayData.configHash !== expectedConfigHash) {
+            throw new Error('Replay rejected: configHash mismatch.');
+        }
+        if (!Array.isArray(replayData.inputTicks)) {
+            throw new Error('Replay rejected: inputTicks missing or not an array.');
+        }
+        // Enforce the dense-log invariant: tick === array index (§30.6).
+        for (let i = 0; i < replayData.inputTicks.length; i++) {
+            const rec = replayData.inputTicks[i];
+            if (!rec || rec.tick !== i || !rec.input) {
+                throw new Error(`Replay rejected: not dense at index ${i} (tick=${rec?.tick}).`);
+            }
+        }
+
         this.playbackInputs = replayData.inputTicks;
-        this.playbackIndex = 0;
         this.playing = true;
         this.recording = false;
     }
@@ -76,32 +104,31 @@ export class ReplaySystem {
     public playTick(tick: number): InputSnapshot | null {
         if (!this.playing) return null;
 
-        // Try to find the input record for the current tick
-        const record = this.playbackInputs[this.playbackIndex];
-        if (record && record.tick === tick) {
-            this.playbackIndex++;
-            return {
-                left: record.input.left,
-                right: record.input.right,
-                fire: record.input.fire,
-                start: record.input.start,
-                select: record.input.select,
-                pointerXDelta: record.input.pointerXDelta,
-                pointerXAbsolute: record.input.pointerXAbsolute,
-                pointerClicked: record.input.fire
-            };
+        // Replay exhausted -> stop cleanly.
+        if (tick >= this.playbackInputs.length) {
+            this.playing = false;
+            return null;
         }
 
-        // If no record found for tick, return a neutral default input
+        // Dense log: index === tick. A mismatch is a desync, surfaced loudly
+        // rather than masked with neutral input.
+        const record = this.playbackInputs[tick];
+        if (record.tick !== tick) {
+            throw new Error(
+                `Replay desync: expected tick ${tick}, got ${record.tick}.`
+            );
+        }
+
+        const paddleX = record.input.paddleX ?? NEUTRAL_PADDLE_X;
         return {
-            left: false,
-            right: false,
-            fire: false,
-            start: false,
+            left: record.input.left,
+            right: record.input.right,
+            fire: record.input.fire,
+            start: record.input.start ?? false,
             select: false,
             pointerXDelta: 0,
-            pointerXAbsolute: 128,
-            pointerClicked: false
+            pointerXAbsolute: paddleX,
+            pointerClicked: record.input.fire,
         };
     }
 
@@ -118,7 +145,7 @@ export class ReplaySystem {
     }
 
     /**
-     * Compute SHA-256 of the canonical configuration settings.
+     * Compute SHA-256 of the canonical configuration settings (§30.7).
      */
     public static async computeConfigHash(
         region: string,
@@ -135,17 +162,17 @@ export class ReplaySystem {
             levelHashes: [...levelHashes].sort(),
             mode,
             numericModel,
-            region
+            region,
         };
 
         const jsonString = JSON.stringify(canonicalConfig);
-        
+
         try {
             const encoder = new TextEncoder();
             const data = encoder.encode(jsonString);
             const hashBuffer = await crypto.subtle.digest('SHA-256', data);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
             return hashHex;
         } catch (e) {
             console.error('Crypto subtle not supported. Falling back to a simple string hash code.', e);
