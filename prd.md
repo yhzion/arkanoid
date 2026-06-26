@@ -642,6 +642,8 @@ provisional rules and revisit against §22:
 | Enlarge | any of {S,C,L,D,B} | Enlarge cancelled, new applied. |
 | Player (P) | any | P effect is immediate (extra life); existing effect is preserved. |
 | Break (B) | any | Break exit logic is one-shot; new capsule applies normally. |
+| Mega (M) | any of {S,C,L,D,E,B,R} | Mega cancelled, new applied. |
+| Reduce (R) | any of {S,C,L,D,E,B,M} | Reduce cancelled, new applied. |
 
 
 ### 12.2 Capsule Types
@@ -655,6 +657,12 @@ provisional rules and revisit against §22:
 | P | Gray | Player | Awards one extra Vaus. |
 | E | Blue | Enlarge | Extends the width of Vaus. |
 | B | Pink | Break | Opens a warp/exit on the right/lower-right; entering awards 10,000 points and advances to the next round. |
+| M | (clean-room TBD) | Mega | The energy ball destroys **all** brick types it contacts, **including GOLD** (otherwise indestructible). Implementation-specific extension. |
+| R | (clean-room TBD) | Reduce | Shrinks Vaus to the narrow (16px) width. **[VERIFY]** The implementation also doubles brick score while active (`reduceActive` is passed as the `doubleScore` argument); confirm whether this score coupling is intended. |
+
+Notes:
+- `M` and `R` are implementation-specific extensions not present in the original Arkanoid II capsule set; their clean-room colors/names are TBD.
+- `M`/`R` are currently placed via level data, **not** the random drop table (§12.3). Wiring them into the randomizer is tracked in `docs/implementation-backlog.md` (handlers exist but are unreachable via the current randomizer).
 
 ### 12.3 Capsule Drop Trigger & Selection
 
@@ -672,6 +680,7 @@ The capsule dropping system operates as follows:
      * Standard probability weight: `2` each.
      * Special probability weight: `1` each.
    * **Duplicate Prevention:** If the chosen capsule type is identical to the *previous* capsule that dropped on the current level, it is replaced with a `D` (Disruption) capsule. This ensures `D` is the only capsule type that can spawn back-to-back.
+   * **Roster note:** The randomizer covers the 7 droppable capsules (`S`, `C`, `L`, `D`, `E`, `P`, `B`). The `M`/`R` extensions are level-data placed and not part of this random selection (§12.2).
 
 
 ### 12.4 Multi-Ball Rules
@@ -718,12 +727,7 @@ Required behavior:
 - Entering the warp awards **10,000 points**.
 - Player advances to the next round.
 - **Multi-Ball Interaction:** If multiple balls are active when the Vaus enters the warp exit, all remaining balls immediately despawn without triggering a life loss.
-- If Break is collected on the final brick round, behavior must be reference-verified.
-
-  Provisional default pending verification: on the final brick round (U.S. Round 35),
-  the Break exit **does not open**; the round must be cleared normally to reach the
-  boss. This avoids skipping the boss and is the safe fallback until capture confirms
-  otherwise.
+- On the final brick round (**Round 33**) and the boss rounds, the Break exit **does not open**; the round must be cleared normally to reach the boss. This matches the implementation gate (`currentRoundNum < 33`, `src/core/roundState.ts`) and avoids skipping the final DOH boss.
 
 ---
 
