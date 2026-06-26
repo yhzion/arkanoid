@@ -890,10 +890,10 @@ The NES version supports two hidden cheats:
 
 Required behavior:
 
-- DOH is the final boss.
-- The player must hit DOH **16 times** with the energy ball.
+- DOH appears as **two boss encounters**: a mid-game boss at **Round 17** and the **final boss at Round 34**. Both use the same boss mechanism.
+- The player must hit DOH **16 times** with the energy ball in each encounter.
 - Each valid ball collision increments boss damage.
-- When damage reaches 16, boss defeat sequence begins.
+- When damage reaches 16, the boss defeat sequence begins. Defeating the Round 17 boss advances to Round 18; defeating the Round 34 boss begins the ending sequence.
 
 ### 15.2 Boss Hazards
 
@@ -908,8 +908,9 @@ Required behavior:
 
 Required behavior:
 
-- If the player loses all lives on DOH, the game ends.
-- No continue should be available after final boss failure unless reference capture proves a region-specific exception.
+- If the player loses all lives during a boss encounter, the game ends.
+- At the **mid-game boss (Round 17)**, normal life-loss and continue rules apply.
+- After **final boss (Round 34)** failure, no continue is available unless reference capture proves a region-specific exception.
 
 ### 15.4 Boss Presentation
 
