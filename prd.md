@@ -758,23 +758,27 @@ Required baseline behavior:
 
 ## 14. Stage Progression
 
-### 14.1 U.S. NES Stage List
+### 14.1 Stage List / Structure
 
-Required U.S. mode:
-
-```text
-Rounds 1-35: brick-layout stages
-Round 36: DOH boss stage
-```
-
-### 14.2 Japanese/Famicom Optional Stage List
-
-Optional Japanese mode:
+Both regions use the same 34-slot branching structure:
 
 ```text
-Rounds 1-32: brick-layout stages
-Round 33: DOH boss stage
+Round 1:        single stage
+Rounds 2-16:    L/R branching stages   (round-NNL.json / round-NNR.json)
+Round 17:       boss stage (mid-game DOH)
+Round 18:       single stage
+Rounds 19-33:   L/R branching stages   (round-NNL.json / round-NNR.json)
+Round 34:       final boss stage (DOH)
 ```
+
+After clearing each branching round, the player follows one of the two L/R
+layout variants for the next round; both variants advance the same round number.
+
+### 14.2 Regional Layout Datasets
+
+US is the required dataset; JP is an optional independent dataset. Both follow
+the identical structure in §14.1 — only the per-round brick layouts differ. The
+JP layouts live under `/data/levels/jp/` and are not a separate round count.
 
 ### 14.3 Stage Data Source Format
 
@@ -782,11 +786,19 @@ Do not hardcode level layouts into engine code. Use external data:
 
 ```text
 /data/levels/us/round-01.json
-/data/levels/us/round-02.json
+/data/levels/us/round-02L.json
+/data/levels/us/round-02R.json
 ...
-/data/levels/us/round-35.json
-/data/levels/us/round-36-boss.json
-/data/levels/jp/round-01.json      # optional
+/data/levels/us/round-16L.json
+/data/levels/us/round-16R.json
+/data/levels/us/round-17.json      # mid-game boss
+/data/levels/us/round-18.json
+/data/levels/us/round-19L.json
+...
+/data/levels/us/round-33L.json
+/data/levels/us/round-33R.json
+/data/levels/us/round-34.json      # final DOH boss
+/data/levels/jp/round-01.json      # optional, same structure
 ...
 ```
 
@@ -850,14 +862,14 @@ Fidelity mode must pass visual and data parity checks:
 3. Silver/gold placement matches reference.
 4. Capsule-**carrier positions** match reference data; the capsule *type* is chosen at runtime by the seeded RNG (§12.3, §30.4), so only carrier placement is parity-checked.
 5. Clear-required count matches reference behavior.
-6. Boss round appears after Round 35 in U.S. mode.
+6. Boss stages appear at Round 17 (mid-game) and Round 34 (final), in both regions.
 
 ### 14.7 Level Skip & Continue Secrets
 
 The NES version supports two hidden cheats:
 
 1. **A + Start Level Skip:**
-   * At the beginning of each level before launching the ball, pressing `A + Start` advances the game by one round per press, up to Level 16, re-running ROUND_INTRO and resetting the ball (§31).
+   * At the beginning of each level before launching the ball, pressing `A + Start` advances the game by one round per press, up to Level 16 (i.e. up to just before the mid-game boss at Round 17) `[VERIFY against code skip cap]`, re-running ROUND_INTRO and resetting the ball (§31).
    * Add this as an optional fidelity setting named `enableManualLevelSkipSecret`.
    * Default: enabled in fidelity mode, disabled in clean-room casual mode.
 
@@ -867,7 +879,7 @@ The NES version supports two hidden cheats:
    * Press the key mapped to **Select** (default `Tab` or `Shift`) **5 times**.
    * Release the buttons, and press **Start** to resume the game from the start of the level where the last life was lost.
    * **Score Reset:** Using a continue resets the player's score to 0 to preserve the integrity of the High Score leaderboard.
-   * *Exception:* Continues are disabled for Round 36 (DOH boss fight).
+   * *Exception:* Continues are disabled for the final DOH boss fight (Round 34).
 
 
 ---
