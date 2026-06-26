@@ -26,28 +26,43 @@ This PRD assumes the desired target is **Licensed Fidelity Mode**, because the r
 
 ## 2. Reference Version Decision
 
-### 2.1 Primary Region
+### 2.1 Primary Reference
 
-The product should target the **U.S. NES version** unless the project owner explicitly switches to the Japanese Famicom version.
+The product targets **Arkanoid II: Revenge of DOH** as the canonical game
+structure for gameplay implementation. This is the structure realized in the
+engine and the level data under `public/data/levels/`.
 
-Known regional difference:
+Region (US/JP) is **not** a round-count difference. Both regions ship the
+**same 34-slot branching structure** with **independent brick layouts** — the
+two datasets (`public/data/levels/us/` and `.../jp/`) differ by per-round layout
+content, not by how many rounds or where the bosses are.
 
-- The Japanese version has **32 brick rounds** and a boss round after them.
-- The U.S. NES version has **35 brick rounds**, followed by the final DOH boss round on **Round 36**.
-- Several public references and maps label the full NES set as 36 rounds including the boss, while the manual text says there are 33 rounds. The PRD resolves this conflict by treating the **actual U.S. NES game structure** as canonical for gameplay implementation: **35 brick rounds + DOH on Round 36**. The manual's "33 rounds" is a documentation discrepancy only, not a gameplay target.
+Stage structure (both regions):
+
+- Round 1: single stage.
+- Rounds 2–16: L/R branching stages (`round-NNL.json` / `round-NNR.json`).
+- **Round 17: boss stage (mid-game DOH).**
+- Round 18: single stage.
+- Rounds 19–33: L/R branching stages.
+- **Round 34: final boss stage (DOH).**
+
+See [Section 14](#14-stage-progression) for the full stage list and data format.
 
 ### 2.2 Supported Region Modes
 
-| Mode | Brick rounds | Boss round | Priority |
-|---|---:|---:|---|
-| U.S. NES | 35 | 36 | Required |
-| Japanese Famicom | 32 | 33 | Optional |
+| Mode | Round slots | Boss rounds | Priority |
+|---|---:|---|---|
+| U.S. | 34 | 17, 34 | Required |
+| Japanese | 34 | 17, 34 | Optional (independent layout dataset) |
+
+Both modes use the identical slot/branch/boss structure; only the per-round
+brick layouts differ.
 
 ### 2.3 Source Notes
 
-- NES manual: rules, scoring, controls, capsule descriptions, enemies, and story framing.
-- GameFAQs regional trivia: U.S. vs Japanese round-count difference.
-- NESMaps and other reference maps: visual stage layout references.
+- Arkanoid II: Revenge of DOH manual/reference: rules, scoring, controls, capsule descriptions, enemies, and story framing.
+- Regional reference data: per-region stage layout differences (same structure, different layouts).
+- Reference maps: visual stage layout references.
 - StrategyWiki: gameplay and boss behavior reference.
 - VGMPF/VGMRips/Zophar/Sounds Resource: audio track/SFX inventory references.
 - Data Crystal ROM map: structure-level validation that the NES ROM stores per-level brick/capsule/hit metadata.
