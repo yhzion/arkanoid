@@ -32,7 +32,7 @@ Scenario: Break warp advances the round
   Then the next round begins and 10,000 points are awarded (§20.1.8)
 
 Scenario: No break exit on the final brick round
-  Given US Round 35 (the final brick round)
+  Given Round 33 (the final brick round)
   Then the break exit does not open; the round must be cleared normally to reach the boss (§8.10 / §12.7)
 ```
 

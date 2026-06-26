@@ -79,7 +79,7 @@ See [Section 21](#21-references) for full references.
 2. Preserve the original-style game loop: title flow, player select, round start, gameplay, death, game over, stage clear, warp, boss, ending, and restart.
 3. Implement the same power-up/capsule set and broad behavior.
 4. Implement the same brick scoring and brick types.
-5. Implement round progression for the U.S. NES version: Rounds 1-35 plus DOH on Round 36.
+5. Implement round progression: 34 round slots with DOH bosses at Round 17 and Round 34 (§14).
 6. Support keyboard, gamepad, mouse/pointer, and optional paddle-like analog controls.
 7. Use deterministic fixed-step gameplay so parity testing and replay validation are possible.
 8. Provide an asset/data pipeline that can load licensed original-equivalent stage maps, sprites, title/ending screens, BGM, and SFX.
@@ -342,7 +342,7 @@ When the Break capsule is active:
 - If the Vaus enters the exit, award **10,000 points**.
 - Advance to the next round.
 - Reset active power-up effects on the next round.
-- Exception: on the final brick round (US Round 35) the break exit does **not** open; the round must be cleared normally to reach the boss (§12.7, canonical).
+- Exception: on the final brick round (Round 33) the break exit does **not** open; the round must be cleared normally to reach the boss (§12.7, canonical).
 
 ### 8.11 Final Boss Screen
 
@@ -873,7 +873,7 @@ Fidelity mode must pass visual and data parity checks:
 The NES version supports two hidden cheats:
 
 1. **A + Start Level Skip:**
-   * At the beginning of each level before launching the ball, pressing `A + Start` advances the game by one round per press, up to Level 16 (i.e. up to just before the mid-game boss at Round 17) `[VERIFY against code skip cap]`, re-running ROUND_INTRO and resetting the ball (§31).
+   * At the beginning of each level before launching the ball, pressing `A + Start` advances the game by one round per press, up to Level 16 (just before the mid-game boss at Round 17; the implementation caps the skip at `Math.min(16, …)`, `boot.ts:221`), re-running ROUND_INTRO and resetting the ball (§31).
    * Add this as an optional fidelity setting named `enableManualLevelSkipSecret`.
    * Default: enabled in fidelity mode, disabled in clean-room casual mode.
 
@@ -1287,7 +1287,7 @@ A build is acceptable when:
 9. Lives decrease on ball loss.
 10. `P` capsule awards an extra life.
 11. Game over triggers when lives are exhausted.
-12. U.S. mode progresses through 35 brick rounds and then Round 36 boss.
+12. The game progresses through 34 round slots with DOH bosses at Round 17 and Round 34.
 13. DOH requires 16 hits and fires lethal projectiles.
 14. Defeating DOH triggers ending.
 
@@ -1380,7 +1380,7 @@ glyph presence.
 ### Version / Round Count Sources
 
 3. [GameFAQs: Arkanoid NES Trivia](https://gamefaqs.gamespot.com/nes/563383-arkanoid/trivia)  
-   Used for U.S. vs Japanese round-count difference: Japanese 32 levels, U.S. 35 levels, DOH on Round 36 outside Japan.
+   Used for U.S. vs Japanese regional layout differences: both regions share the same 34-slot branching structure (bosses at Round 17 and Round 34) with different per-round brick layouts.
 
 4. [GameFAQs: Arkanoid NES FAQs and Maps](https://gamefaqs.gamespot.com/nes/563383-arkanoid/faqs)  
    Used to identify available block-layout map references for Rounds 1-10, 11-20, 21-30, and 31-boss.
