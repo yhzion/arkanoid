@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Play a reference-accurate NES Arkanoid web reconstruction. Clean-room homage mode with customizable settings and Leaderboard." />
+    <title>NES Arkanoid Web Homage</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <h1 class="glow-text">ARKANOID</h1>
+        <p class="subtitle">NES Web Reconstruction</p>
+      </header>
+
+      <main class="main-layout">
+        <!-- Arcade Screen Container -->
+        <div class="cabinet-frame">
+          <div class="screen-wrapper">
+            <canvas id="gameCanvas" width="256" height="240" id="gameCanvas"></canvas>
+            <div id="autoplay-indicator" class="demo-tag hidden">DEMO MODE</div>
+          </div>
+          
+          <!-- On-screen mobile controllers (hidden on desktop) -->
+          <div id="osc-controls" class="osc-overlay hidden">
+            <div class="osc-pad" id="osc-left-btn">◀</div>
+            <div class="osc-fire" id="osc-fire-btn">FIRE</div>
+            <div class="osc-pad" id="osc-right-btn">▶</div>
+          </div>
+        </div>
+
+        <!-- Sidebar Glassmorphic Settings Panel -->
+        <aside class="sidebar-panel glass-card">
+          <h2 class="section-title">Control Room</h2>
+          
+          <div class="settings-group">
+            <h3>Audio Controls</h3>
+            <div class="setting-row">
+              <label for="mute-toggle">Mute Audio</label>
+              <button id="mute-toggle" class="btn-toggle">Mute</button>
+            </div>
+            <div class="setting-row">
+              <label for="music-slider">Music Vol</label>
+              <input type="range" id="music-slider" min="0" max="1" step="0.05" value="0.5" />
+            </div>
+            <div class="setting-row">
+              <label for="sfx-slider">SFX Vol</label>
+              <input type="range" id="sfx-slider" min="0" max="1" step="0.05" value="0.6" />
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <h3>Configuration</h3>
+            <div class="setting-row">
+              <label for="region-select">Region Mode</label>
+              <select id="region-select" class="dropdown">
+                <option value="US">U.S. NES (36 Rounds)</option>
+                <option value="JP">Famicom JP (33 Rounds)</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <label for="input-mode-select">Input Method</label>
+              <select id="input-mode-select" class="dropdown">
+                <option value="keyboard">Keyboard</option>
+                <option value="relative-pointer">Relative Mouse</option>
+                <option value="absolute-pointer">Absolute Mouse</option>
+                <option value="touch">Touch OSC</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <label for="deflection-select">Paddle Physics</label>
+              <select id="deflection-select" class="dropdown">
+                <option value="continuous">Continuous Math</option>
+                <option value="discrete8">NES 8-Zone Discrete</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <label for="jitter-toggle">Angle Jitter</label>
+              <button id="jitter-toggle" class="btn-toggle">Disabled</button>
+            </div>
+            <div class="setting-row">
+              <label for="level-skip-toggle">Manual Skip Cheat</label>
+              <button id="level-skip-toggle" class="btn-toggle">Enabled</button>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <h3>Developer Utilities</h3>
+            <div class="setting-row">
+              <button id="reset-leaderboard-btn" class="btn-action danger-btn">Reset Leaderboard</button>
+            </div>
+            <div class="setting-row">
+              <button id="fullscreen-btn" class="btn-action">Go Fullscreen</button>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <!-- Keyboard controls remap helper modal (optional popup) -->
+      <footer class="app-footer">
+        <p>Pair programming with Antigravity AI &bull; 1987-2026 Taito Homage</p>
+      </footer>
+    </div>
+
+    <!-- Unlock audio overlay -->
+    <div id="audio-unlock-overlay" class="audio-overlay">
+      <div class="unlock-card glass-card">
+        <h2>NES ARKANOID</h2>
+        <p>Tapping below initializes Web Audio and enables retro synthesized chiptunes.</p>
+        <button id="audio-unlock-btn" class="btn-action primary-btn">LAUNCH SIMULATION</button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

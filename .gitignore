@@ -1,8 +1,11 @@
 # Dependencies
 node_modules/
+node_modules
 
 # Build output
 dist/
+dist
+dist-ssr
 build/
 
 # Test artifacts
@@ -11,21 +14,30 @@ playwright-report/
 coverage/
 
 # Logs
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
 # Environment
 .env
 .env.local
 .env.*.local
+*.local
 
-# Editor / OS
+# Editor / OS / Build directories and files
 .DS_Store
 Thumbs.db
-*.swp
 .idea/
+.idea
 .vscode/*
 !.vscode/extensions.json
+*.swp
+*.sw?
+*.suo
+*.ntvsca
+*.njsproj
+*.sln
