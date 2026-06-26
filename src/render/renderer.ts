@@ -45,10 +45,10 @@ export function render(
   ctx.fillRect(PLAY_LEFT - 2, PLAY_TOP, 2, PLAY_BOTTOM - PLAY_TOP); // left
   ctx.fillRect(PLAY_RIGHT, PLAY_TOP, 2, PLAY_BOTTOM - PLAY_TOP); // right
 
-  if (state === GameState.PLAYING || state === GameState.BALL_READY || state === GameState.PAUSED || state === GameState.ROUND_INTRO || state === GameState.LIFE_LOST) {
-    drawRound(ctx, payload.sim!);
-  } else if (state === GameState.BOSS_PLAYING || state === GameState.BOSS_INTRO) {
-    drawBoss(ctx, payload.boss!);
+  if (payload.sim && (state === GameState.PLAYING || state === GameState.BALL_READY || state === GameState.PAUSED || state === GameState.ROUND_INTRO || state === GameState.LIFE_LOST)) {
+    drawRound(ctx, payload.sim);
+  } else if (payload.boss && (state === GameState.BOSS_PLAYING || state === GameState.BOSS_INTRO)) {
+    drawBoss(ctx, payload.boss);
   }
 
   drawHud(ctx, payload.score, payload.lives, payload.round, payload.region);
