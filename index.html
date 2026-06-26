@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arkanoid</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+#game-canvas { image-rendering: pixelated; image-rendering: crisp-edges; cursor: none; }
+#click-to-start {
+  position: fixed; inset: 0; display: flex; justify-content: center; align-items: center;
+  background: rgba(0,0,0,0.85); color: #fff; font-family: monospace; font-size: 20px;
+  z-index: 10; cursor: pointer;
+}
+#click-to-start.hidden { display: none; }
+#settings-panel {
+  position: fixed; top: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #ccc;
+  font-family: monospace; font-size: 12px; padding: 8px; border-radius: 4px;
+  z-index: 5; display: none;
+}
+#settings-panel.visible { display: block; }
+#settings-panel label { display: block; margin: 4px 0; }
+#settings-panel input[type=range] { width: 100px; }
+</style>
+</head>
+<body>
+<canvas id="game-canvas" width="256" height="240"></canvas>
+<div id="click-to-start">CLICK TO START</div>
+<div id="settings-panel">
+  <label>Master <input type="range" id="vol-master" min="0" max="100" value="80"></label>
+  <label>Music <input type="range" id="vol-music" min="0" max="100" value="60"></label>
+  <label>SFX <input type="range" id="vol-sfx" min="0" max="100" value="80"></label>
+  <label><input type="checkbox" id="crt-filter"> CRT Filter</label>
+  <button id="reset-scores">Reset Scores</button>
+</div>
+<script type="module" src="/src/app/main.ts"></script>
+</body>
+</html>
