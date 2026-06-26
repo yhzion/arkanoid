@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Arkanoid — Web (clean-room)</title>
+    <style>
+      html, body { margin: 0; padding: 0; background: #000; color: #ccc;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow: hidden; }
+      #app { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+      canvas { image-rendering: pixelated; image-rendering: crisp-edges; background: #000; }
+      #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+        background: rgba(0,0,0,0.85); color: #fff; font-size: 18px; cursor: pointer; z-index: 10; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="overlay">Click / Tap to Start</div>
+      <canvas id="game" width="256" height="240"></canvas>
+    </div>
+    <script type="module" src="/src/app/main.ts"></script>
+  </body>
+</html>
