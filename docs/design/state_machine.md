@@ -35,8 +35,8 @@ stateDiagram-v2
     LIFE_LOST --> BALL_READY : lives > 0
     LIFE_LOST --> GAME_OVER : lives == 0
 
-    ROUND_CLEAR --> BOSS_INTRO : roundNumber == bossRound(region)
-    ROUND_CLEAR --> ROUND_INTRO : else (round+1)
+    ROUND_CLEAR --> BOSS_INTRO : roundNumber in {17, 34}
+    ROUND_CLEAR --> ROUND_INTRO : else (round+1, L/R variant)
     BREAK_WARP --> ROUND_INTRO : entry anim end (round+1)
 
     BOSS_INTRO --> BOSS_PLAYING : intro end
@@ -58,3 +58,5 @@ stateDiagram-v2
 - **PAUSED** records `pausedFrom` on entry and returns to it on resume.
 - **GAMEPLAY_DEMO** replays a seeded input log on a fixed round, abortable by any input.
 - **TURN_HANDOFF** (2-player) is `[DEFERRED → M3]` per §10.6 and is not part of the M1 single-player flow.
+- **Boss rounds**: DOH appears as two encounters — a mid-game boss at Round 17 and the final boss at Round 34 (`boot.ts:294` treats both identically). `BOSS_INTRO` is entered when `roundNumber ∈ {17, 34}`; the Round 17 boss returns to normal play (Round 18), the Round 34 boss leads to `ENDING`.
+- **L/R branching**: rounds 2–16 and 19–33 have L/R layout variants (`round-NNL.json` / `round-NNR.json`). The branch is selected on stage exit — entering the break-warp on the left vs. right side emits branch `L` vs. `R` (`roundState.ts:122-126`), which sets `currentRoundBranch` for the next round load (`boot.ts:340`, `assetLoader.ts:8`).
