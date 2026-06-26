@@ -975,18 +975,21 @@ Original BGM and SFX may only be used with rights clearance. The web engine must
 
 ### 17.2 Reference Music Inventory
 
-Known NES music references include short jingles and an ending track. Public audio references list tracks such as:
+Unlike the original Arkanoid, **Arkanoid II: Revenge of DOH** has in-game
+background music. The reference audio set includes (by role, not by verified
+track name):
 
-- Game Start.
-- Round Start.
-- DOH / Dimensional Fortress DOH round music or jingle.
+- Title / attract music.
+- In-game stage background music.
+- Boss background music (Round 17 and Round 34 DOH encounters).
 - Ending.
 - Game Over.
 - Name Entry.
-- Start Demo / demo-related short cue depending on source naming.
-- Extend / extra-life cue depending on source naming.
+- Short jingles: round start, extend / extra-life cue.
 
-Per-track length, loop in/out points, and one-shot-vs-loop behavior `[DEFERRED → M4]`.
+The exact Arkanoid II-edition track list, per-track length, loop in/out points,
+and one-shot-vs-loop behavior are `[DEFERRED → reference capture]` — track
+naming is not yet verified, so specific titles are intentionally omitted.
 
 ### 17.3 SFX Inventory
 
