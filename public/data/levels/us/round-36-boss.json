@@ -1,0 +1,17 @@
+{
+  "id": "us-round-36",
+  "region": "US",
+  "roundNumber": 36,
+  "type": "boss",
+  "grid": {
+    "columns": 11,
+    "rows": 28,
+    "brickWidth": 16,
+    "brickHeight": 8
+  },
+  "clearRequiredCount": 0,
+  "cells": [],
+  "enemyProfile": "boss-round-36",
+  "ballProfile": "boss-round-36",
+  "paletteProfile": "us-round-36"
+}
